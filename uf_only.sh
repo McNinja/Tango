@@ -135,7 +135,7 @@ fi
 if [ -f /etc/debian_version ]; then
     apt-get -y update &>> $logfile
     print_notification "Installing required packages via apt-get.."
-    apt-get -y install python-dev python-openssl python-pyasn1 authbind git libgnutls-dev libcurl4-gnutls-dev libssl-dev &>> $logfile
+    apt-get -y install python-dev python-openssl python-pyasn1 libgnutls-dev libcurl4-gnutls-dev libssl-dev &>> $logfile
     curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" &>> $logfile
     python get-pip.py &>> $logfile	
     error_check 'Apt Package Installation'
