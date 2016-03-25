@@ -2,16 +2,6 @@
 #Universal Forwarder Install Only for Tango Honeypot
 #Should be compatible with Ubuntu and Debian.
 
-#Disclaimer. Continues for yes, quits for no.
-while true; do
-    read -p "[!] You are about to install Cowrie and the Splunk Universal Forwarder. By running this installer, you accept Splunk's EULA. Do you wish to proceed? (Yes/No)" yn
-    case $yn in
-        [Yy]* ) break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer Yes or No.";;
-    esac
-done
-
 ########################################
 
 #User input variables
@@ -167,47 +157,16 @@ else
 	exit 1
 fi
 
-########################################
-
-# Adding splunk user for service to run as. Shell is set to /bin/false.
-
-print_status "Checking for splunk user and group.."
-
-getent passwd splunk &>> $logfile
-if [ $? -eq 0 ]; then
-	print_status "splunk user exists. Verifying group exists.."
-	id -g splunk &>> $logfile
-	if [ $? -eq 0 ]; then
-		print_notification "splunk group exists."
-	else
-		print_notification "splunk group does not exist. Creating.."
-		groupadd splunk &>> $logfile
-		usermod -G splunk splunk &>> $logfile
-		error_check 'Creation of Splunk group and Addition of Splunk user to group'
-	fi
-else
-	print_status "Creating splunk user and group.."
-	groupadd splunk &>> $logfile
-	useradd -g splunk splunk -d /home/splunk -s /bin/false &>> $logfile
-        mkdir /home/splunk
-        chown -R splunk:splunk /home/splunk
-	error_check 'Splunk user and group creation'
-	
-fi
-
-chown -R splunk:splunk /home/splunk &>> $logfile
-
-########################################
 
 # Installing Splunk Universal Forwarder and setting it to persist on reboot
 
 print_notification "Installing Splunk Universal Forwarder.."
 cd /opt
 tar -xzf $INSTALL_FILE &>> $logfile
-chown -R splunk:splunk splunkforwarder &>> $logfile
-sudo -u splunk /opt/splunkforwarder/bin/splunk start --accept-license --answer-yes --auto-ports --no-prompt &>> $logfile
+chown -R cowrie:cowrie splunkforwarder &>> $logfile
+sudo -u cowrie /opt/splunkforwarder/bin/splunk start --accept-license --answer-yes --auto-ports --no-prompt &>> $logfile
 error_check 'Universal Forwarder Configuration'
-/opt/splunkforwarder/bin/splunk enable boot-start -user splunk &>> $logfile
+/opt/splunkforwarder/bin/splunk enable boot-start -user cowrie &>> $logfile
 error_check 'Universal Forwarder Install' 
 
 ########################################
@@ -230,7 +189,7 @@ sed -i "s/test/$HOST_NAME/" inputs.conf &>> $logfile
 sed -i "s,/opt/cowrie/log/,${KIPPO_LOG_LOCATION}," inputs.conf &>> $logfile
 sed -i "s/test/$SPLUNK_INDEXER/" outputs.conf &>> $logfile
 
-chown -R splunk:splunk /opt/splunkforwarder &>> $logfile
+chown -R cowrie:cowrie /opt/splunkforwarder &>> $logfile
 /opt/splunkforwarder/bin/splunk restart &>> $logfile
 error_check 'Tango_input installation'
 
